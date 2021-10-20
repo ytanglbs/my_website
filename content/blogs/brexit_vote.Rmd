@@ -1,0 +1,100 @@
+---
+title: "Brexit vote analysis"
+date: '2021-10-20'
+description: Brexit vote analysis
+draft: no
+image: brexit.jpg
+keywords: ''
+slug: brexit_vote
+categories:
+- ''
+- ''
+---
+
+```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(here)
+library(janitor)
+```
+
+# Brexit vote analysis
+
+We will have a look at the results of the 2016 Brexit vote in the UK. First we read the data using `read_csv()` and have a quick glimpse at the data
+
+```{r load_brexit_data, warning=FALSE, message=FALSE}
+brexit_results <- read_csv(here::here("data","brexit_results.csv"))
+
+
+glimpse(brexit_results)
+```
+
+The data comes from [Elliott Morris](https://www.thecrosstab.com/), who cleaned it and made it available through his [DataCamp class on analysing election and polling data in R](https://www.datacamp.com/courses/analyzing-election-and-polling-data-in-r).
+
+Our main outcome variable (or y) is `leave_share`, which is the percent of votes cast in favour of Brexit, or leaving the EU. Each row is a UK [parliament constituency](https://en.wikipedia.org/wiki/United_Kingdom_Parliament_constituencies).
+
+To get a sense of the spread, or distribution, of the data, we can plot a histogram, a density plot, and the empirical cumulative distribution function of the leave % in all constituencies.
+
+```{r brexit_histogram, warning=FALSE, message=FALSE}
+
+# histogram
+ggplot(brexit_results, aes(x = leave_share)) +
+  geom_histogram(binwidth = 2.5) + 
+    labs(title = "Histogram of Brexit Leave Share",
+       subtitle = "Statistics by Constituency",
+    x = "% of votes cast in favour of Brexit",
+    y = "count of constituency")
+
+# density plot-- think smoothed histogram
+ggplot(brexit_results, aes(x = leave_share)) +
+  geom_density()+
+  labs(title = "Density Plot of Brexit Leave Share",
+       subtitle = "Statistics by Constituency",
+    x = "% votes cast in favour of Brexit",
+    y = "density of constituency")
+
+# The empirical cumulative distribution function (ECDF) 
+ggplot(brexit_results, aes(x = leave_share)) +
+  stat_ecdf(geom = "step", pad = FALSE) +
+  scale_y_continuous(labels = scales::percent)+
+  labs(title = "Empirical Cumulative Distribution Function of Brexit Leave Share",
+       subtitle = "Statistics by Constituency",
+    x = "% votes cast in favour of Brexit",
+    y = "cumulative density of constituency")
+
+
+```
+
+One common explanation for the Brexit outcome was fear of immigration and opposition to the EU's more open border policy. We can check the relationship (or correlation) between the proportion of native born residents (`born_in_uk`) in a constituency and its `leave_share`. To do this, let us get the correlation between the two variables
+
+```{r brexit_immigration_correlation}
+brexit_results %>% 
+  select(leave_share, born_in_uk) %>% 
+  cor()
+```
+
+The correlation is almost 0.5, which shows that the two variables are positively correlated.
+
+We can also create a scatterplot between these two variables using `geom_point`. We also add the best fit line, using `geom_smooth(method = "lm")`.
+
+```{r brexit_immigration_plot}
+ggplot(brexit_results, aes(x = born_in_uk, y = leave_share)) +
+  geom_point(alpha=0.3) +
+  labs(title = "Brexit Immigration Scatterplot",
+       subtitle = "Correlation between Leave_share and Born_in_uk",
+    x = "proportion of native born residents",
+    y = "percent of votes cast in favour of Brexit") +
+  
+  # add a smoothing line, and use method="lm" to get the best straight-line
+  geom_smooth(method = "lm") + 
+  
+  # use a white background and frame the plot with a black box
+  theme_bw() +
+  NULL
+```
+
+You have the code for the plots, I would like you to revisit all of them and use the `labs()` function to add an informative title, subtitle, and axes titles to all plots.
+
+What can you say about the relationship shown above? Again, don't just say what's happening in the graph. Tell some sort of story and speculate about the differences in the patterns.
+
+> The positive relationship between proportion of native born residents and percent of votes cast in favour of Brexit may indicate that in comparison with non-native residents, native born residents consider that the benefits of brexit will outweigh the stricter boarder policies. 
+
