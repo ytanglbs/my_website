@@ -69,15 +69,15 @@ params:
     links:
       - name: Home
         url: '#'
-      #- name: Blogs
-        #url: blogs
       - name: Short intro
         url: blogs/short_intro
+      - name: Blogs
+        #url: blogs
       #- name: Elements
        # url: elements.html
     menu: Menu
-    subtitle: By HTML5 Up
-    title: Everett
+    subtitle: By Everett
+    title: Portfolio website
   tiles:
     enable: yes
     showcase:
